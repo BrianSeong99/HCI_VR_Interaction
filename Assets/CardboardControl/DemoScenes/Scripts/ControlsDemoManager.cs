@@ -6,7 +6,6 @@ public class ControlsDemoManager : MonoBehaviour {
   * Start by capturing the helper script on CardboardControlManager
   */
   public CardboardControl cardboard;
-
   /*
   * CardboardControl has access to all the controls and their Delegates
   * Unity provides a good primer on delegates here:
@@ -31,7 +30,7 @@ public class ControlsDemoManager : MonoBehaviour {
     cardboard.box.OnTilt += CardboardMagnetReset;
   }
 
-
+  float zoom_ratio = 0.4f;
 
   /*
   * In this demo, we randomize object colours for triggered events
@@ -67,17 +66,45 @@ public class ControlsDemoManager : MonoBehaviour {
     CardboardControlGaze gaze = sender as CardboardControlGaze;
     // We can access to the object we're looking at
     // gaze.IsHeld will make sure the gaze.Object() isn't null
-    if (gaze.IsHeld() && gaze.Object().name.Contains("Photo")) {
+    if (gaze.IsHeld() && (gaze.Object().name.Contains("Photo") || gaze.Object().name.Contains("Button"))){
       ChangeObjectColor(gaze.Object().name);
-      if (gaze.Object().name == "HighlightPhoto") {
-        // Highlighting can help identify which objects can be interacted with
-        // The reticle is hidden by default but we already toggled that in the Inspector
-        cardboard.reticle.Highlight(Color.red);
-      }
+      // if (gaze.Object().name == "HighlightPhoto") {
+      //   // Highlighting can help identify which objects can be interacted with
+      //   // The reticle is hidden by default but we already toggled that in the Inspector
+      //   cardboard.reticle.Highlight(Color.red);
+      // }
     }
+    if (gaze.IsHeld() && cardboard.trigger.isZoom  && cardboard.trigger.mode == 1 && gaze.Object().name.Contains("Photo")) {
+      print("zoomin");
+      print(gaze.Object().name);
+      // print("zoom in " + gaze.Object().name);
+      GameObject obj = GameObject.Find(gaze.Object().name);
+      print("before zoom in" + obj.transform.position);
+      obj.transform.position = new Vector3(obj.transform.position.x * zoom_ratio, obj.transform.position.y, obj.transform.position.z * zoom_ratio);
+      print("done zoom in" + obj.transform.position);
+    }
+    // else if (gaze.IsHeld() && gaze.Object().name.Contains("Button")) {
+    //   ChangeObjectColor(gaze.Object().name);
+    //   print("inside button if");
+    //   if (mode == 0) {
+    //     mode = 1;
+    //     savePos(photoCount);
+    //   } else if (mode == 1) {
+    //     mode = 0;
+    //   }
+    //   movePos(photoCount, mode);
+    // }
+
+    if (gaze.WasHeld() && cardboard.trigger.isZoom && cardboard.trigger.mode == 1 && gaze.PreviousObject().name.Contains("Photo")) {
+      print("zoomout");
+      // print("zoom out " + gaze.Object().name);
+      GameObject obj = GameObject.Find(gaze.PreviousObject().name);
+      obj.transform.position = new Vector3(obj.transform.position.x / zoom_ratio, obj.transform.position.y, obj.transform.position.z / zoom_ratio);
+    }
+
     // We also can access to the last object we looked at
     // gaze.WasHeld() will make sure the gaze.PreviousObject() isn't null
-    if (gaze.WasHeld() && gaze.PreviousObject().name.Contains("Photo")) {
+    if (gaze.WasHeld() && (gaze.PreviousObject().name.Contains("Photo") || gaze.PreviousObject().name.Contains("Button"))) {
       ResetObjectColor(gaze.PreviousObject().name);
       // Use these to undo reticle hiding and highlighting
       cardboard.reticle.Show();
@@ -93,7 +120,7 @@ public class ControlsDemoManager : MonoBehaviour {
 
   private void CardboardStare(object sender) {
     CardboardControlGaze gaze = sender as CardboardControlGaze;
-    if (gaze.IsHeld() && gaze.Object().name.Contains("Photo")) {
+    if (gaze.IsHeld() && (gaze.Object().name.Contains("Photo") || gaze.Object().name.Contains("Button"))) {
       // Be sure to hide the cursor when it's not needed
       cardboard.reticle.Hide();
     }
