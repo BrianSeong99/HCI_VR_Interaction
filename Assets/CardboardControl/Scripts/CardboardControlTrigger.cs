@@ -17,6 +17,12 @@ public class CardboardControlTrigger : MonoBehaviour {
   public KeyCode triggerKey = KeyCode.Space;
   public bool printDebugInfo = false;
 
+  private int clkCount = 0;
+  private float releaseTime = 0f;
+  private bool clicked = false;
+
+  public string beingGazedObjectName = "";
+
   private ParsedMagnetData magnet;
   private ParsedTouchData touch;
   private enum TriggerState { Up, Down }
@@ -41,13 +47,23 @@ public class CardboardControlTrigger : MonoBehaviour {
   public void Update() {
     magnet.Update();
     touch.Update();
+    // controlKey();
+    CheckKey();
     if (useTouch) CheckTouch();
     if (useMagnet) CheckMagnet();   // check magnet signal
-    CheckKey();
   }
 
   public void FixedUpdate() {
     if (printDebugInfo) PrintDebug();
+  }
+
+  public void controlKey() {
+    if (Input.GetKeyDown(KeyCode.W)) {
+      GameObject obj = GameObject.Find(beingGazedObjectName);
+      // Debug.log("beingGazedObjectName: " + beingGazedObjectName);
+      obj.GetComponent<cakeslice.Outline>().color = 2;
+      obj.GetComponent<cakeslice.Outline>().lock_color = true;
+    }
   }
 
   private bool KeyFor(string direction) {
@@ -62,6 +78,8 @@ public class CardboardControlTrigger : MonoBehaviour {
   }
 
   private void CheckKey() {
+    // if (Input.GetKeyDown(triggerKey)) ReportDown();
+    // if (Input.GetKeyUp(triggerKey)) ReportUp();
     if (KeyFor("down") && cardboard.EventReady("OnDown")) ReportDown();
     if (KeyFor("up") && cardboard.EventReady("OnUp")) ReportUp();
   }
@@ -82,17 +100,41 @@ public class CardboardControlTrigger : MonoBehaviour {
 
   private void ReportDown() {
     if (currentTriggerState == TriggerState.Up) {
+
+      GameObject obj = GameObject.Find(beingGazedObjectName);
+      if (obj.GetComponent<cakeslice.Outline>().lock_color == true) {
+        obj.GetComponent<cakeslice.Outline>().color = 1;
+      obj.GetComponent<cakeslice.Outline>().lock_color = false;
+      } else {
+        obj.GetComponent<cakeslice.Outline>().color = 2;
+        obj.GetComponent<cakeslice.Outline>().lock_color = true;
+      }
+
+      // if (clkCount == 1) {
+      //   // GameObject obj = GameObject.Find(beingGazedObjectName);
+      //   obj.GetComponent<cakeslice.Outline>().color = 1;
+      //   obj.GetComponent<cakeslice.Outline>().lock_color = false;
+      // }
+
       currentTriggerState = TriggerState.Down;
-      OnDown(this);
+      // OnDown(this);
+
       if (vibrateOnDown) Handheld.Vibrate();
       clickStartTime = Time.time;
+      // if (Time.time - releaseTime <= clickSpeedThreshold) {
+      //   clkCount++;
+      //   obj.GetComponent<cakeslice.Outline>().color = 1;
+      //   obj.GetComponent<cakeslice.Outline>().lock_color = false;
+      // } else {
+      //   clkCount = 0;
+      // }
     }
   }
 
   private void ReportUp() {
     if (currentTriggerState == TriggerState.Down) {
       currentTriggerState = TriggerState.Up;
-      OnUp(this);
+      // OnUp(this);
       if (vibrateOnUp) Handheld.Vibrate();
       CheckForClick();
     }
@@ -100,17 +142,27 @@ public class CardboardControlTrigger : MonoBehaviour {
 
   private void CheckForClick() {
     bool withinClickThreshold = SecondsHeld() <= clickSpeedThreshold;
+    // if (withinClickThreshold && cardboard.EventReady("OnClick")) ReportClick();
+    if (clkCount > 0 && !withinClickThreshold) {
+      while(clkCount-- > 0) {
+        if (vibrateOnClick) Handheld.Vibrate();
+      }
+    }
     clickStartTime = 0f;
-    if (withinClickThreshold && cardboard.EventReady("OnClick")) ReportClick();
+    releaseTime = Time.time;
   }
 
   private void ReportClick() {
-    OnClick(this);
+    // OnClick(this);
     if (vibrateOnClick) Handheld.Vibrate();
   }
 
   public float SecondsHeld() {
     return Time.time - clickStartTime;
+  }
+
+  public int continuedClicks() {
+    return clkCount;
   }
 
   public bool IsHeld() {

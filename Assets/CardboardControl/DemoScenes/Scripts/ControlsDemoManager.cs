@@ -67,9 +67,9 @@ public class ControlsDemoManager : MonoBehaviour {
     CardboardControlGaze gaze = sender as CardboardControlGaze;
     // We can access to the object we're looking at
     // gaze.IsHeld will make sure the gaze.Object() isn't null
-    if (gaze.IsHeld() && gaze.Object().name.Contains("Cube")) {
+    if (gaze.IsHeld() && gaze.Object().name.Contains("Photo")) {
       ChangeObjectColor(gaze.Object().name);
-      if (gaze.Object().name == "HighlightCube") {
+      if (gaze.Object().name == "HighlightPhoto") {
         // Highlighting can help identify which objects can be interacted with
         // The reticle is hidden by default but we already toggled that in the Inspector
         cardboard.reticle.Highlight(Color.red);
@@ -77,7 +77,7 @@ public class ControlsDemoManager : MonoBehaviour {
     }
     // We also can access to the last object we looked at
     // gaze.WasHeld() will make sure the gaze.PreviousObject() isn't null
-    if (gaze.WasHeld() && gaze.PreviousObject().name.Contains("Cube")) {
+    if (gaze.WasHeld() && gaze.PreviousObject().name.Contains("Photo")) {
       ResetObjectColor(gaze.PreviousObject().name);
       // Use these to undo reticle hiding and highlighting
       cardboard.reticle.Show();
@@ -93,7 +93,7 @@ public class ControlsDemoManager : MonoBehaviour {
 
   private void CardboardStare(object sender) {
     CardboardControlGaze gaze = sender as CardboardControlGaze;
-    if (gaze.IsHeld() && gaze.Object().name.Contains("Cube")) {
+    if (gaze.IsHeld() && gaze.Object().name.Contains("Photo")) {
       // Be sure to hide the cursor when it's not needed
       cardboard.reticle.Hide();
     }
@@ -110,12 +110,21 @@ public class ControlsDemoManager : MonoBehaviour {
 
   private void ChangeObjectColor(string name) {
     GameObject obj = GameObject.Find(name);
-    Color newColor = RandomColor();
-    obj.GetComponent<Renderer>().material.color = newColor;
+    cardboard.trigger.beingGazedObjectName = name;
+    if (!obj.GetComponent<cakeslice.Outline>().lock_color) {
+      obj.GetComponent<cakeslice.Outline>().color = 1;
+    }
+    // Color newColor = ;
+    // obj.GetComponent<Renderer>().material.color = newColor;
   }
 
   private void ResetObjectColor(string name) {
-    GameObject.Find(name).GetComponent<Renderer>().material.color = Color.white;
+    // GameObject.Find(name).GetComponent<Renderer>().material.color = Color.white;
+    GameObject obj = GameObject.Find(name);
+    cardboard.trigger.beingGazedObjectName = "";
+    if (!obj.GetComponent<cakeslice.Outline>().lock_color) {
+      obj.GetComponent<cakeslice.Outline>().color = 0;
+    }
   }
 
   private void ResetSpheres() {
@@ -147,8 +156,11 @@ public class ControlsDemoManager : MonoBehaviour {
     else {
       textMesh.GetComponent<Renderer>().enabled = Time.time % 1 < 0.5;
     }
-  }
 
+    TextMesh continuousTextMesh = GameObject.Find("SphereContinuous/Counter").GetComponent<TextMesh>();
+    continuousTextMesh.GetComponent<Renderer>().enabled = true;
+    continuousTextMesh.text = cardboard.trigger.continuedClicks().ToString();
+  }
 
 
   /*
