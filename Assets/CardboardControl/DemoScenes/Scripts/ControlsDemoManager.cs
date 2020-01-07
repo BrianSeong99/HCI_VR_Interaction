@@ -1,11 +1,20 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+
 public class ControlsDemoManager : MonoBehaviour {
   /*
   * Start by capturing the helper script on CardboardControlManager
   */
   public CardboardControl cardboard;
+  float angle;
+  Vector3 axis = Vector3.zero;
+
+  public float xRotationSpeed = 50.0f;
+  public float yRotationSpeed = 50.0f;
+  public float zRotationSpeed = 1.0f;
+
+
   /*
   * CardboardControl has access to all the controls and their Delegates
   * Unity provides a good primer on delegates here:
@@ -68,38 +77,38 @@ public class ControlsDemoManager : MonoBehaviour {
     // gaze.IsHeld will make sure the gaze.Object() isn't null
     if (gaze.IsHeld() && (gaze.Object().name.Contains("Photo") || gaze.Object().name.Contains("Button"))){
       ChangeObjectColor(gaze.Object().name);
-      // if (gaze.Object().name == "HighlightPhoto") {
-      //   // Highlighting can help identify which objects can be interacted with
-      //   // The reticle is hidden by default but we already toggled that in the Inspector
-      //   cardboard.reticle.Highlight(Color.red);
-      // }
+      print(gaze.Object().transform.position);
     }
-    if (gaze.IsHeld() && cardboard.trigger.isZoom  && cardboard.trigger.mode == 1 && gaze.Object().name.Contains("Photo")) {
-      print("zoomin");
-      print(gaze.Object().name);
+    // viewing mode + zoom mode
+    if (gaze.IsHeld() && cardboard.trigger.mode == 1 && gaze.Object().name.Contains("Photo")) {
+      cardboard.trigger.imBeingGazed = true;
       // print("zoom in " + gaze.Object().name);
-      GameObject obj = GameObject.Find(gaze.Object().name);
-      print("before zoom in" + obj.transform.position);
-      obj.transform.position = new Vector3(obj.transform.position.x * zoom_ratio, obj.transform.position.y, obj.transform.position.z * zoom_ratio);
-      print("done zoom in" + obj.transform.position);
+      if(cardboard.trigger.isZoom) {
+        print("zoomin");
+        GameObject obj = GameObject.Find(gaze.Object().name);
+        print("before zoom in" + obj.transform.position);
+        obj.transform.position = new Vector3(obj.transform.position.x * zoom_ratio, obj.transform.position.y, obj.transform.position.z * zoom_ratio);
+        print("done zoom in" + obj.transform.position);
+      }
     }
-    // else if (gaze.IsHeld() && gaze.Object().name.Contains("Button")) {
-    //   ChangeObjectColor(gaze.Object().name);
-    //   print("inside button if");
-    //   if (mode == 0) {
-    //     mode = 1;
-    //     savePos(photoCount);
-    //   } else if (mode == 1) {
-    //     mode = 0;
-    //   }
-    //   movePos(photoCount, mode);
+
+    // viewing mode + not zoom mode
+    // if(gaze.IsHeld() && !cardboard.trigger.isZoom && cardboard.trigger.mode == 1 && gaze.Object().name.Contains("Photo")) {
+    //   // gaze.interactionButtons = new GameObject[4];
+    //   // gaze.interactionButtons[0] = GUI.Button(new Rect(50, 50, 150, 35), "push in");
+    //   // gaze.interactionButtons[1] = GUI.Button(new Rect(50, 50, 150, 35), "push in");
+    //   // gaze.interactionButtons[2] = GUI.Button(new Rect(50, 50, 150, 35), "push in");
+    //   // gaze.interactionButtons[3] = GUI.Button(new Rect(50, 50, 150, 35), "push in");
     // }
 
-    if (gaze.WasHeld() && cardboard.trigger.isZoom && cardboard.trigger.mode == 1 && gaze.PreviousObject().name.Contains("Photo")) {
-      print("zoomout");
-      // print("zoom out " + gaze.Object().name);
-      GameObject obj = GameObject.Find(gaze.PreviousObject().name);
-      obj.transform.position = new Vector3(obj.transform.position.x / zoom_ratio, obj.transform.position.y, obj.transform.position.z / zoom_ratio);
+    if (gaze.WasHeld() && cardboard.trigger.mode == 1 && gaze.PreviousObject().name.Contains("Photo")) {
+      cardboard.trigger.imBeingGazed = false;
+      if (cardboard.trigger.isZoom) {
+        print("zoomout");
+        // print("zoom out " + gaze.Object().name);
+        GameObject obj = GameObject.Find(gaze.PreviousObject().name);
+        obj.transform.position = new Vector3(obj.transform.position.x / zoom_ratio, obj.transform.position.y, obj.transform.position.z / zoom_ratio);
+      }
     }
 
     // We also can access to the last object we looked at
@@ -172,21 +181,21 @@ public class ControlsDemoManager : MonoBehaviour {
   * During our game we can utilize data from the CardboardControl API
   */
   void Update() {
-    // TextMesh textMesh = GameObject.Find("SphereDown/Counter").GetComponent<TextMesh>();
+    if (cardboard.trigger.isRotate) {
 
-    // trigger.IsHeld() is true when the trigger has gone down but not back up yet
-    // if (cardboard.trigger.IsHeld()) {
-    //   textMesh.GetComponent<Renderer>().enabled = true;
-    //   // trigger.SecondsHeld() is the number of seconds we've held the trigger down
-    //   textMesh.text = cardboard.trigger.SecondsHeld().ToString("#.##");
-    // }
-    // else {
-    //   textMesh.GetComponent<Renderer>().enabled = Time.time % 1 < 0.5;
-    // }
+      GameObject obj = GameObject.Find(cardboard.trigger.beingRotateObjectName);
+      GameObject main = GameObject.Find("Main Camera");
+      obj.transform.rotation = main.transform.rotation;
+      // obj.transform.localEulerAngles = new Vector3(0f, 30f, 0f);
+      // obj.transform.Rotate(Vector3.up * (10 * yRotationSpeed));
+      // obj.transform.Rotate(Vector3.forward * (10 * zRotationSpeed));
+      // Quaternion q = Quaternion.AngleAxis(angle * Time.deltaTime, main.transform.right);
+      // obj.transform.rotation = q * obj.transform.rotation;
+      // print(obj.transform.rotation);
 
-    // TextMesh continuousTextMesh = GameObject.Find("SphereContinuous/Counter").GetComponent<TextMesh>();
-    // continuousTextMesh.GetComponent<Renderer>().enabled = true;
-    // continuousTextMesh.text = cardboard.trigger.continuedClicks().ToString();
+
+
+    }
   }
 
 

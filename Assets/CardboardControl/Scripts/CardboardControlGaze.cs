@@ -26,6 +26,8 @@ public class CardboardControlGaze : MonoBehaviour {
   public CardboardControlDelegate OnChange = delegate {};
   public CardboardControlDelegate OnStare = delegate {};
 
+  // public GameObject[] interactionButtons;
+
   public void Start() {
     cardboard = gameObject.GetComponent<CardboardControl>();
     camera = Camera.main.transform;
