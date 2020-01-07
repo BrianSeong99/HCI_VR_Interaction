@@ -172,21 +172,21 @@ public class ControlsDemoManager : MonoBehaviour {
   * During our game we can utilize data from the CardboardControl API
   */
   void Update() {
-    TextMesh textMesh = GameObject.Find("SphereDown/Counter").GetComponent<TextMesh>();
+    // TextMesh textMesh = GameObject.Find("SphereDown/Counter").GetComponent<TextMesh>();
 
     // trigger.IsHeld() is true when the trigger has gone down but not back up yet
-    if (cardboard.trigger.IsHeld()) {
-      textMesh.GetComponent<Renderer>().enabled = true;
-      // trigger.SecondsHeld() is the number of seconds we've held the trigger down
-      textMesh.text = cardboard.trigger.SecondsHeld().ToString("#.##");
-    }
-    else {
-      textMesh.GetComponent<Renderer>().enabled = Time.time % 1 < 0.5;
-    }
+    // if (cardboard.trigger.IsHeld()) {
+    //   textMesh.GetComponent<Renderer>().enabled = true;
+    //   // trigger.SecondsHeld() is the number of seconds we've held the trigger down
+    //   textMesh.text = cardboard.trigger.SecondsHeld().ToString("#.##");
+    // }
+    // else {
+    //   textMesh.GetComponent<Renderer>().enabled = Time.time % 1 < 0.5;
+    // }
 
-    TextMesh continuousTextMesh = GameObject.Find("SphereContinuous/Counter").GetComponent<TextMesh>();
-    continuousTextMesh.GetComponent<Renderer>().enabled = true;
-    continuousTextMesh.text = cardboard.trigger.continuedClicks().ToString();
+    // TextMesh continuousTextMesh = GameObject.Find("SphereContinuous/Counter").GetComponent<TextMesh>();
+    // continuousTextMesh.GetComponent<Renderer>().enabled = true;
+    // continuousTextMesh.text = cardboard.trigger.continuedClicks().ToString();
   }
 
 
